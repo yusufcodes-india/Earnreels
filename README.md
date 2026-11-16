@@ -132,7 +132,7 @@ Output APK is located at: `app/build/outputs/apk/debug/app-debug.apk`
 ## 🗺️ Roadmap
 - [x] Phase 1: Architecture, Gradle 9.1 & Material 3 Dark Design System
 - [x] Phase 2: Local Database (Room), DAOs, Entities, Preferences & Use Cases
-- [ ] Phase 3: Pomodoro Focus Timer & Foreground Service
+- [x] Phase 3: Pomodoro Focus Timer, Foreground Service & Focus Rewards
 - [ ] Phase 4: Reels Wallet & Reward Transaction Engine
 - [ ] Phase 5: Health Connect Steps Integration
 - [ ] Phase 6: Health Connect Sleep Routine Integration
