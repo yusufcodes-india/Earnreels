@@ -10,10 +10,13 @@ import com.earnreels.app.data.repository.RewardsRepository
 import com.earnreels.app.data.repository.SleepRepository
 import com.earnreels.app.data.repository.StepsRepository
 import com.earnreels.app.data.repository.StreakRepository
+import com.earnreels.app.data.repository.StudyGoalRepository
 import com.earnreels.app.data.repository.WorkoutRepository
 import com.earnreels.app.domain.model.AppSettings
 import com.earnreels.app.domain.model.DailyHabitSummary
 import com.earnreels.app.domain.model.ReelsAllowance
+import com.earnreels.app.domain.model.StudyGoal
+import com.earnreels.app.domain.model.StudyGoalCategory
 import com.earnreels.app.domain.model.WorkoutType
 import com.earnreels.app.health.HealthConnectManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +46,7 @@ class TodayViewModel(
     private val workoutRepository: WorkoutRepository,
     private val streakRepository: StreakRepository,
     private val focusRepository: FocusRepository,
+    private val studyGoalRepository: StudyGoalRepository,
     private val preferences: UserPreferences,
     private val healthConnectManager: HealthConnectManager
 ) : ViewModel() {
@@ -58,6 +62,9 @@ class TodayViewModel(
     val settings: StateFlow<AppSettings> = preferences.appSettingsFlow
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), AppSettings())
 
+    val studyGoals: StateFlow<List<StudyGoal>> = studyGoalRepository.getGoalsForDate(today)
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
     val combinedStreak: StateFlow<Int> = streakRepository.getStreak(StreakRepository.COMBINED_HABIT)
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), null)
         .let { flow ->
@@ -69,6 +76,36 @@ class TodayViewModel(
 
     private val _isWorkoutDialogOpen = MutableStateFlow(false)
     val isWorkoutDialogOpen: StateFlow<Boolean> = _isWorkoutDialogOpen.asStateFlow()
+
+    private val _isAddGoalDialogOpen = MutableStateFlow(false)
+    val isAddGoalDialogOpen: StateFlow<Boolean> = _isAddGoalDialogOpen.asStateFlow()
+
+    fun openAddGoalDialog() {
+        _isAddGoalDialogOpen.value = true
+    }
+
+    fun closeAddGoalDialog() {
+        _isAddGoalDialogOpen.value = false
+    }
+
+    fun addStudyGoal(title: String, targetMinutes: Int, category: StudyGoalCategory) {
+        if (title.isBlank() || targetMinutes <= 0) return
+        viewModelScope.launch {
+            studyGoalRepository.addGoal(
+                title = title.trim(),
+                targetMinutes = targetMinutes,
+                category = category,
+                date = today
+            )
+            closeAddGoalDialog()
+        }
+    }
+
+    fun deleteStudyGoal(goalId: Long) {
+        viewModelScope.launch {
+            studyGoalRepository.deleteGoal(goalId)
+        }
+    }
 
     fun refreshHealthData() {
         viewModelScope.launch {
@@ -121,11 +158,12 @@ class TodayViewModel(
             val workoutRepo = WorkoutRepository(db.workoutLogDao(), db.dailyHabitSummaryDao(), rewardsRepo)
             val streakRepo = StreakRepository(db.streakDao(), rewardsRepo)
             val focusRepo = FocusRepository(db.focusSessionDao())
+            val studyGoalRepo = StudyGoalRepository(db.studyGoalDao())
             val prefs = UserPreferences(context)
             val healthManager = HealthConnectManager(context)
 
             return TodayViewModel(
-                rewardsRepo, stepsRepo, sleepRepo, workoutRepo, streakRepo, focusRepo, prefs, healthManager
+                rewardsRepo, stepsRepo, sleepRepo, workoutRepo, streakRepo, focusRepo, studyGoalRepo, prefs, healthManager
             )
         }
     }

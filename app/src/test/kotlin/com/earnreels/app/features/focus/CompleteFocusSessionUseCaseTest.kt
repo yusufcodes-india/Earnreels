@@ -5,14 +5,18 @@ import com.earnreels.app.data.local.entity.FocusSessionEntity
 import com.earnreels.app.data.local.entity.StreakEntity
 import com.earnreels.app.data.repository.FakeReelsAllowanceDao
 import com.earnreels.app.data.repository.FakeRewardTransactionDao
+import com.earnreels.app.data.repository.FakeStudyGoalDao
 import com.earnreels.app.data.repository.FocusRepository
 import com.earnreels.app.data.repository.RewardsRepository
 import com.earnreels.app.data.repository.StreakRepository
+import com.earnreels.app.data.repository.StudyGoalRepository
+import com.earnreels.app.domain.model.StudyGoalCategory
 import com.earnreels.app.domain.usecase.CompleteFocusSessionUseCase
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -24,6 +28,8 @@ class CompleteFocusSessionUseCaseTest {
     private lateinit var focusRepo: FocusRepository
     private lateinit var rewardsRepo: RewardsRepository
     private lateinit var streakRepo: StreakRepository
+    private lateinit var fakeGoalDao: FakeStudyGoalDao
+    private lateinit var goalRepo: StudyGoalRepository
     private lateinit var useCase: CompleteFocusSessionUseCase
 
     @Before
@@ -35,8 +41,10 @@ class CompleteFocusSessionUseCaseTest {
         rewardsRepo = RewardsRepository(fakeAllowanceDao, fakeTxDao)
         val fakeStreakDao = FakeStreakDao()
         streakRepo = StreakRepository(fakeStreakDao, rewardsRepo)
+        fakeGoalDao = FakeStudyGoalDao()
+        goalRepo = StudyGoalRepository(fakeGoalDao)
 
-        useCase = CompleteFocusSessionUseCase(focusRepo, rewardsRepo, streakRepo)
+        useCase = CompleteFocusSessionUseCase(focusRepo, rewardsRepo, streakRepo, goalRepo)
     }
 
     @Test
@@ -63,6 +71,20 @@ class CompleteFocusSessionUseCaseTest {
         val sessionId = focusRepo.startSession(60)
         val awarded = useCase(sessionId, 60)
         assertEquals(10, awarded)
+    }
+
+    @Test
+    fun completingSessionWithLinkedGoal_logsProgressToStudyGoal(): Unit = runBlocking {
+        val goalId = goalRepo.addGoal("Chemistry Lecture 3", 50, StudyGoalCategory.LECTURE)
+        val sessionId = focusRepo.startSession(25)
+
+        val awarded = useCase(sessionId, 25, linkedGoalId = goalId)
+
+        assertEquals(5, awarded)
+        val goal = goalRepo.getGoalById(goalId)
+        assertEquals(25, goal?.completedMinutes)
+        assertEquals(25, goal?.remainingMinutes)
+        assertFalse(goal?.isCompleted == true)
     }
 }
 

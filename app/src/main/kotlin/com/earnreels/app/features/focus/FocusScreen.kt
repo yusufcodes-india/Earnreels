@@ -6,6 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -66,6 +67,8 @@ fun FocusScreen(
     val totalSeconds by viewModel.totalSeconds.collectAsStateWithLifecycle()
     val todayCompletedMinutes by viewModel.todayCompletedMinutes.collectAsStateWithLifecycle()
     val streak by viewModel.focusStreak.collectAsStateWithLifecycle()
+    val activeGoalTitle by viewModel.activeGoalTitle.collectAsStateWithLifecycle()
+    val linkedGoalTitle by viewModel.linkedGoalTitle.collectAsStateWithLifecycle()
 
     FocusTimerContent(
         selectedDuration = selectedDuration,
@@ -74,6 +77,7 @@ fun FocusScreen(
         totalSeconds = totalSeconds,
         todayCompletedMinutes = todayCompletedMinutes,
         streakDays = streak?.currentStreak ?: 0,
+        goalTitle = activeGoalTitle ?: linkedGoalTitle,
         onSelectDuration = { viewModel.selectDuration(it) },
         onStart = { viewModel.startSession(context) },
         onPause = { viewModel.pauseSession(context) },
@@ -92,6 +96,7 @@ fun FocusTimerContent(
     totalSeconds: Int,
     todayCompletedMinutes: Int,
     streakDays: Int,
+    goalTitle: String? = null,
     onSelectDuration: (Int) -> Unit,
     onStart: () -> Unit,
     onPause: () -> Unit,
@@ -148,6 +153,22 @@ fun FocusTimerContent(
                 )
 
                 StreakBadge(streakDays = streakDays)
+            }
+        }
+
+        // Active Linked Goal Badge
+        if (!goalTitle.isNullOrBlank()) {
+            Box(
+                modifier = Modifier
+                    .background(CardSurface, PillShape)
+                    .border(1.dp, LimeAccent.copy(alpha = 0.5f), PillShape)
+                    .padding(horizontal = Spacing.md, vertical = Spacing.xs)
+            ) {
+                Text(
+                    text = "🎯 $goalTitle",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = LimeAccent
+                )
             }
         }
 
@@ -353,6 +374,7 @@ fun FocusTimerPreview() {
             totalSeconds = 25 * 60,
             todayCompletedMinutes = 25,
             streakDays = 4,
+            goalTitle = "Calculus Lecture 4",
             onSelectDuration = {},
             onStart = {},
             onPause = {},

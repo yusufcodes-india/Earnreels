@@ -8,6 +8,7 @@ import com.earnreels.app.data.local.EarnReelsDatabase
 import com.earnreels.app.data.repository.FocusRepository
 import com.earnreels.app.data.repository.RewardsRepository
 import com.earnreels.app.data.repository.StreakRepository
+import com.earnreels.app.data.repository.StudyGoalRepository
 import com.earnreels.app.domain.usecase.CompleteFocusSessionUseCase
 import com.earnreels.app.notifications.FocusNotificationHelper
 import kotlinx.coroutines.CoroutineScope
@@ -37,6 +38,8 @@ class FocusTimerService : Service() {
     private var totalSeconds = 25 * 60
     private var remainingSeconds = totalSeconds
     private var sessionId: Long = 0
+    private var linkedGoalId: Long = 0
+    private var linkedGoalTitle: String? = null
 
     override fun onCreate() {
         super.onCreate()
@@ -48,6 +51,9 @@ class FocusTimerService : Service() {
             ACTION_START -> {
                 durationMinutes = intent.getIntExtra(EXTRA_DURATION_MINUTES, 25)
                 sessionId = intent.getLongExtra(EXTRA_SESSION_ID, 0)
+                linkedGoalId = intent.getLongExtra(EXTRA_LINKED_GOAL_ID, 0)
+                linkedGoalTitle = intent.getStringExtra(EXTRA_LINKED_GOAL_TITLE)
+
                 totalSeconds = durationMinutes * 60
                 remainingSeconds = totalSeconds
                 startCountdown()
@@ -64,6 +70,7 @@ class FocusTimerService : Service() {
         _statusFlow.value = TimerStatus.RUNNING
         _remainingSecondsFlow.value = remainingSeconds
         _totalSecondsFlow.value = totalSeconds
+        _activeGoalTitleFlow.value = linkedGoalTitle
 
         val notification = FocusNotificationHelper.buildNotification(
             this, remainingSeconds, totalSeconds, isPaused = false
@@ -125,6 +132,7 @@ class FocusTimerService : Service() {
         _statusFlow.value = TimerStatus.IDLE
         remainingSeconds = totalSeconds
         _remainingSecondsFlow.value = totalSeconds
+        _activeGoalTitleFlow.value = null
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
@@ -135,8 +143,11 @@ class FocusTimerService : Service() {
             val focusRepo = FocusRepository(db.focusSessionDao())
             val rewardsRepo = RewardsRepository(db.reelsAllowanceDao(), db.rewardTransactionDao())
             val streakRepo = StreakRepository(db.streakDao(), rewardsRepo)
-            val completeUseCase = CompleteFocusSessionUseCase(focusRepo, rewardsRepo, streakRepo)
-            completeUseCase(sessionId, durationMinutes)
+            val goalRepo = StudyGoalRepository(db.studyGoalDao())
+            val completeUseCase = CompleteFocusSessionUseCase(focusRepo, rewardsRepo, streakRepo, goalRepo)
+
+            completeUseCase(sessionId, durationMinutes, if (linkedGoalId > 0) linkedGoalId else null)
+            _activeGoalTitleFlow.value = null
         }
     }
 
@@ -156,6 +167,8 @@ class FocusTimerService : Service() {
 
         const val EXTRA_DURATION_MINUTES = "extra_duration_minutes"
         const val EXTRA_SESSION_ID = "extra_session_id"
+        const val EXTRA_LINKED_GOAL_ID = "extra_linked_goal_id"
+        const val EXTRA_LINKED_GOAL_TITLE = "extra_linked_goal_title"
 
         private val _statusFlow = MutableStateFlow(TimerStatus.IDLE)
         val statusFlow: StateFlow<TimerStatus> = _statusFlow.asStateFlow()
@@ -166,11 +179,22 @@ class FocusTimerService : Service() {
         private val _totalSecondsFlow = MutableStateFlow(25 * 60)
         val totalSecondsFlow: StateFlow<Int> = _totalSecondsFlow.asStateFlow()
 
-        fun start(context: Context, durationMinutes: Int, sessionId: Long) {
+        private val _activeGoalTitleFlow = MutableStateFlow<String?>(null)
+        val activeGoalTitleFlow: StateFlow<String?> = _activeGoalTitleFlow.asStateFlow()
+
+        fun start(
+            context: Context,
+            durationMinutes: Int,
+            sessionId: Long,
+            linkedGoalId: Long? = null,
+            linkedGoalTitle: String? = null
+        ) {
             val intent = Intent(context, FocusTimerService::class.java).apply {
                 action = ACTION_START
                 putExtra(EXTRA_DURATION_MINUTES, durationMinutes)
                 putExtra(EXTRA_SESSION_ID, sessionId)
+                if (linkedGoalId != null) putExtra(EXTRA_LINKED_GOAL_ID, linkedGoalId)
+                if (linkedGoalTitle != null) putExtra(EXTRA_LINKED_GOAL_TITLE, linkedGoalTitle)
             }
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)

@@ -13,15 +13,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
-data class FocusUiState(
-    val selectedDurationMinutes: Int = 25,
-    val status: TimerStatus = TimerStatus.IDLE,
-    val remainingSeconds: Int = 25 * 60,
-    val totalSeconds: Int = 25 * 60,
-    val todayCompletedMinutes: Int = 0,
-    val focusStreakDays: Int = 0
-)
-
 class FocusViewModel(
     private val focusRepository: FocusRepository,
     private val streakRepository: StreakRepository
@@ -29,6 +20,12 @@ class FocusViewModel(
 
     private val _selectedDuration = MutableStateFlow(25)
     val selectedDuration: StateFlow<Int> = _selectedDuration.asStateFlow()
+
+    private val _linkedGoalId = MutableStateFlow<Long?>(null)
+    val linkedGoalId: StateFlow<Long?> = _linkedGoalId.asStateFlow()
+
+    private val _linkedGoalTitle = MutableStateFlow<String?>(null)
+    val linkedGoalTitle: StateFlow<String?> = _linkedGoalTitle.asStateFlow()
 
     private val today = LocalDate.now().toString()
 
@@ -41,6 +38,12 @@ class FocusViewModel(
     val timerStatus: StateFlow<TimerStatus> = FocusTimerService.statusFlow
     val remainingSeconds: StateFlow<Int> = FocusTimerService.remainingSecondsFlow
     val totalSeconds: StateFlow<Int> = FocusTimerService.totalSecondsFlow
+    val activeGoalTitle: StateFlow<String?> = FocusTimerService.activeGoalTitleFlow
+
+    fun setLinkedGoal(goalId: Long?, title: String?) {
+        _linkedGoalId.value = goalId
+        _linkedGoalTitle.value = title
+    }
 
     fun selectDuration(minutes: Int) {
         if (timerStatus.value == TimerStatus.IDLE) {
@@ -51,7 +54,13 @@ class FocusViewModel(
     fun startSession(context: Context) {
         viewModelScope.launch {
             val sessionId = focusRepository.startSession(_selectedDuration.value)
-            FocusTimerService.start(context, _selectedDuration.value, sessionId)
+            FocusTimerService.start(
+                context = context,
+                durationMinutes = _selectedDuration.value,
+                sessionId = sessionId,
+                linkedGoalId = _linkedGoalId.value,
+                linkedGoalTitle = _linkedGoalTitle.value
+            )
         }
     }
 

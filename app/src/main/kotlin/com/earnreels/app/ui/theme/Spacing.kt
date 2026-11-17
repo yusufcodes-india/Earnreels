@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
  */
 object Spacing {
     val fine: Dp = 4.dp
+    val xs: Dp = 4.dp
     val sm: Dp = 8.dp
     val md: Dp = 12.dp
     val cardGap: Dp = 14.dp

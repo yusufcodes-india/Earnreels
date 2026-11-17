@@ -26,11 +26,17 @@ EarnReels is a local-first, privacy-focused native Android app that builds a hea
 
 ## 💎 Features (MVP)
 
-### ⏱️ Focus Timer
+### ⏱️ Focus Timer & Custom Study Goals
 - Pomodoro-style focus timer with preset lengths: **15, 25, 45, or 60 minutes** (default: 25 minutes).
 - Reliable background execution powered by an Android Foreground Service with live notification progress.
 - Tracks daily completed focus minutes and daily focus streaks.
 - Rewards: `+3m` (15m), `+5m` (25m), `+8m` (45m), `+10m` (60m).
+- **Custom Study & Lecture Goals**:
+  - Add your own daily goals with custom titles and categories: **Lecture** (🎓), **Study** (📚), **Lesson** (📖), **Assignment** (✍️), or **Revision** (🔄).
+  - Set target durations (25m, 45m, 60m, 90m, 120m).
+  - Launch a focused session directly attached to any goal via the `▶ Focus on this` action.
+  - Live countdown tracks remaining study and lecture time (e.g. *35m remaining of 60m*).
+  - Completing focus blocks updates the goal's progress bar in real time and deposits Reels minutes into your wallet.
 
 ### 👟 Daily Steps (Health Connect)
 - Reads daily steps using Health Connect aggregate queries to avoid double-counting.
@@ -151,3 +157,4 @@ The output APK is generated at:
 - [x] Phase 7: Workout Logging & Daily Habit Streaks
 - [x] Phase 8: Accessibility Service & Reels/Shorts Blocker
 - [x] Phase 9: Settings, Strict Mode, Navigation & History View
+- [x] Phase 10: Custom Study & Lecture Goals with Goal-Linked Focus Timer

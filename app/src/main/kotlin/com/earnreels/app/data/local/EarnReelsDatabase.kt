@@ -9,12 +9,14 @@ import com.earnreels.app.data.local.dao.FocusSessionDao
 import com.earnreels.app.data.local.dao.ReelsAllowanceDao
 import com.earnreels.app.data.local.dao.RewardTransactionDao
 import com.earnreels.app.data.local.dao.StreakDao
+import com.earnreels.app.data.local.dao.StudyGoalDao
 import com.earnreels.app.data.local.dao.WorkoutLogDao
 import com.earnreels.app.data.local.entity.DailyHabitSummaryEntity
 import com.earnreels.app.data.local.entity.FocusSessionEntity
 import com.earnreels.app.data.local.entity.ReelsAllowanceEntity
 import com.earnreels.app.data.local.entity.RewardTransactionEntity
 import com.earnreels.app.data.local.entity.StreakEntity
+import com.earnreels.app.data.local.entity.StudyGoalEntity
 import com.earnreels.app.data.local.entity.WorkoutLogEntity
 
 @Database(
@@ -24,9 +26,10 @@ import com.earnreels.app.data.local.entity.WorkoutLogEntity
         WorkoutLogEntity::class,
         ReelsAllowanceEntity::class,
         RewardTransactionEntity::class,
-        StreakEntity::class
+        StreakEntity::class,
+        StudyGoalEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class EarnReelsDatabase : RoomDatabase() {
@@ -36,6 +39,7 @@ abstract class EarnReelsDatabase : RoomDatabase() {
     abstract fun reelsAllowanceDao(): ReelsAllowanceDao
     abstract fun rewardTransactionDao(): RewardTransactionDao
     abstract fun streakDao(): StreakDao
+    abstract fun studyGoalDao(): StudyGoalDao
 
     companion object {
         @Volatile

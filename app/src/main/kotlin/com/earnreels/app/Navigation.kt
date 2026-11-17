@@ -50,7 +50,21 @@ fun MainNavigation() {
             entry<TodayNavKey> {
                 TodayScreen(
                     viewModel = todayViewModel,
-                    onStartFocus = { backStack.add(FocusNavKey) },
+                    onStartFocus = {
+                        focusViewModel.setLinkedGoal(null, null)
+                        backStack.add(FocusNavKey)
+                    },
+                    onStartGoalFocus = { goalId, goalTitle, remainingMins ->
+                        focusViewModel.setLinkedGoal(goalId, goalTitle)
+                        val duration = when {
+                            remainingMins >= 60 -> 60
+                            remainingMins >= 45 -> 45
+                            remainingMins >= 25 -> 25
+                            else -> 15
+                        }
+                        focusViewModel.selectDuration(duration)
+                        backStack.add(FocusNavKey)
+                    },
                     onOpenSettings = { backStack.add(SettingsNavKey) },
                     onSelectTab = { tab ->
                         when (tab) {
