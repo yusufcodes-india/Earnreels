@@ -12,21 +12,21 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = LimeAccent,
-    onPrimary = CharcoalBackground,
+    primary = ProgressAccent,
+    onPrimary = GraphiteBackground,
     primaryContainer = CardSurfaceVariant,
-    onPrimaryContainer = LimeAccent,
+    onPrimaryContainer = PrimaryText,
     secondary = SleepAccent,
-    onSecondary = CharcoalBackground,
-    background = CharcoalBackground,
-    onBackground = TextMain,
+    onSecondary = GraphiteBackground,
+    background = GraphiteBackground,
+    onBackground = PrimaryText,
     surface = CardSurface,
-    onSurface = TextMain,
+    onSurface = PrimaryText,
     surfaceVariant = CardSurfaceVariant,
-    onSurfaceVariant = TextSecondary,
+    onSurfaceVariant = SecondaryText,
     outline = BorderSubtle,
-    error = ErrorRed,
-    onError = CharcoalBackground
+    error = BlockedRed,
+    onError = GraphiteBackground
 )
 
 private val LightColorScheme = lightColorScheme(

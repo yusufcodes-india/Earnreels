@@ -15,12 +15,28 @@ class StreakRepository(
 
     fun getStreak(habitType: String): Flow<Streak> {
         return streakDao.getStreak(habitType).map {
-            it?.toDomain() ?: Streak(habitType = habitType)
+            val domain = it?.toDomain() ?: Streak(habitType = habitType)
+            normalizeActiveStreak(domain)
         }
     }
 
     suspend fun getStreakSync(habitType: String): Streak {
-        return streakDao.getStreakSync(habitType)?.toDomain() ?: Streak(habitType = habitType)
+        val domain = streakDao.getStreakSync(habitType)?.toDomain() ?: Streak(habitType = habitType)
+        return normalizeActiveStreak(domain)
+    }
+
+    private fun normalizeActiveStreak(streak: Streak): Streak {
+        val lastDateStr = streak.lastCompletedDate ?: return streak
+        val lastDate = try {
+            LocalDate.parse(lastDateStr)
+        } catch (e: Exception) {
+            return streak
+        }
+        val today = LocalDate.now()
+        // If last completed date was today or yesterday, streak is still active.
+        // If last completed date was 2 or more days ago, streak has lapsed (currentStreak = 0).
+        val isActive = lastDate.isEqual(today) || lastDate.plusDays(1).isEqual(today)
+        return if (isActive) streak else streak.copy(currentStreak = 0)
     }
 
     /**

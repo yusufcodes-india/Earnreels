@@ -3,6 +3,7 @@ package com.earnreels.app.blocking
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
@@ -79,6 +80,9 @@ fun BlockerContent(
     onGoHome: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    // Intercept back button to safely return to home screen
+    BackHandler(onBack = onGoHome)
+
     Column(
         modifier = modifier
             .fillMaxSize()

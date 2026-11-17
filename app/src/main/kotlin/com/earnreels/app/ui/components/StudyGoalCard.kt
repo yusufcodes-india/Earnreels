@@ -2,6 +2,7 @@ package com.earnreels.app.ui.components
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,10 +34,13 @@ import com.earnreels.app.domain.model.StudyGoal
 import com.earnreels.app.ui.theme.BorderSubtle
 import com.earnreels.app.ui.theme.CardShape
 import com.earnreels.app.ui.theme.CardSurface
+import com.earnreels.app.ui.theme.CardSurfaceVariant
 import com.earnreels.app.ui.theme.CharcoalBackground
-import com.earnreels.app.ui.theme.LimeAccent
 import com.earnreels.app.ui.theme.PillShape
+import com.earnreels.app.ui.theme.PrimaryText
+import com.earnreels.app.ui.theme.ProgressAccent
 import com.earnreels.app.ui.theme.Spacing
+import com.earnreels.app.ui.theme.SuccessAccent
 import com.earnreels.app.ui.theme.TextMain
 import com.earnreels.app.ui.theme.TextSecondary
 
@@ -115,19 +119,19 @@ fun StudyGoalCard(
                 Text(
                     text = if (goal.isCompleted) "Completed" else "${goal.remainingMinutes}m remaining",
                     style = MaterialTheme.typography.bodySmall,
-                    color = if (goal.isCompleted) LimeAccent else TextSecondary
+                    color = if (goal.isCompleted) SuccessAccent else TextSecondary
                 )
             }
 
             Spacer(modifier = Modifier.height(Spacing.sm))
 
-            // Progress bar
+            // Progress bar (thin 4dp)
             LinearProgressIndicator(
                 progress = { goal.progress },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(6.dp),
-                color = LimeAccent,
+                    .height(4.dp),
+                color = ProgressAccent,
                 trackColor = BorderSubtle,
                 strokeCap = StrokeCap.Round
             )
@@ -141,23 +145,24 @@ fun StudyGoalCard(
                 ) {
                     Box(
                         modifier = Modifier
-                            .background(LimeAccent, PillShape)
+                            .background(CardSurfaceVariant, PillShape)
+                            .border(1.dp, ProgressAccent, PillShape)
                             .clickable { onStartFocus() }
-                            .padding(horizontal = Spacing.md, vertical = Spacing.xs),
+                            .padding(horizontal = Spacing.md, vertical = Spacing.fine),
                         contentAlignment = Alignment.Center
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Rounded.PlayArrow,
                                 contentDescription = null,
-                                tint = CharcoalBackground,
-                                modifier = Modifier.size(16.dp)
+                                tint = ProgressAccent,
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = "Focus on this",
                                 style = MaterialTheme.typography.labelMedium,
-                                color = CharcoalBackground
+                                color = PrimaryText
                             )
                         }
                     }
@@ -171,13 +176,13 @@ fun StudyGoalCard(
                     Icon(
                         imageVector = Icons.Rounded.CheckCircle,
                         contentDescription = null,
-                        tint = LimeAccent,
+                        tint = SuccessAccent,
                         modifier = Modifier.size(14.dp)
                     )
                     Text(
                         text = "Goal achieved! Reels allowance awarded.",
                         style = MaterialTheme.typography.labelSmall,
-                        color = LimeAccent
+                        color = SuccessAccent
                     )
                 }
             }

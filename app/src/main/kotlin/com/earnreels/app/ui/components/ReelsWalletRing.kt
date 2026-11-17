@@ -20,17 +20,22 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.earnreels.app.ui.theme.BorderSubtle
-import com.earnreels.app.ui.theme.LimeAccent
+import com.earnreels.app.ui.theme.PrimaryText
+import com.earnreels.app.ui.theme.ProgressAccent
+import com.earnreels.app.ui.theme.SecondaryText
 import com.earnreels.app.ui.theme.Spacing
-import com.earnreels.app.ui.theme.TextSecondary
 
+/**
+ * Visual centerpiece: a large, thin circular progress ring showing remaining Reels/Shorts minutes,
+ * with the number e.g. "12 min" in large soft off-white text and "Reels time left" below it in muted gray.
+ */
 @Composable
 fun ReelsWalletRing(
     remainingMinutes: Int,
     maxMinutes: Int = 30,
     modifier: Modifier = Modifier,
-    size: Dp = 210.dp,
-    strokeWidth: Dp = 14.dp
+    size: Dp = 230.dp,
+    strokeWidth: Dp = 7.dp
 ) {
     val progressTarget = if (maxMinutes > 0) {
         (remainingMinutes.toFloat() / maxMinutes.toFloat()).coerceIn(0f, 1f)
@@ -49,15 +54,15 @@ fun ReelsWalletRing(
         Canvas(modifier = Modifier.size(size)) {
             val stroke = strokeWidth.toPx()
 
-            // Background subtle track
+            // Subtle background track
             drawCircle(
                 color = BorderSubtle,
                 style = Stroke(width = stroke)
             )
 
-            // Active Lime progress arc
+            // Thin progress arc in calm blue (#8AB4F8)
             drawArc(
-                color = LimeAccent,
+                color = ProgressAccent,
                 startAngle = -90f,
                 sweepAngle = 360f * animatedProgress,
                 useCenter = false,
@@ -69,15 +74,15 @@ fun ReelsWalletRing(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "$remainingMinutes",
-                style = MaterialTheme.typography.displayLarge,
-                color = MaterialTheme.colorScheme.onBackground
+                text = "$remainingMinutes min",
+                style = MaterialTheme.typography.displayMedium,
+                color = PrimaryText
             )
             Spacer(modifier = Modifier.height(Spacing.fine))
             Text(
-                text = "MINUTES LEFT",
-                style = MaterialTheme.typography.labelSmall,
-                color = TextSecondary
+                text = "Reels time left",
+                style = MaterialTheme.typography.bodyMedium,
+                color = SecondaryText
             )
         }
     }

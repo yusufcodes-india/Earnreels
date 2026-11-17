@@ -65,6 +65,8 @@ fun SettingsScreen(
     val hasHealthPermissions by viewModel.hasHealthPermissions.collectAsStateWithLifecycle()
 
     var showResetDialog by remember { mutableStateOf(false) }
+    var showAccessibilityDisclosure by remember { mutableStateOf(false) }
+    var showHealthDisclosure by remember { mutableStateOf(false) }
 
     Column(
         modifier = modifier
@@ -259,13 +261,8 @@ fun SettingsScreen(
                 // Accessibility Settings Shortcut
                 SettingRow(
                     label = "Accessibility Permission",
-                    value = "Open Android Settings",
-                    onClick = {
-                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
-                        }
-                        context.startActivity(intent)
-                    }
+                    value = "View Disclosure & Setup",
+                    onClick = { showAccessibilityDisclosure = true }
                 )
             }
         }
@@ -317,8 +314,7 @@ fun SettingsScreen(
                         else -> "Unavailable"
                     },
                     onClick = {
-                        // Open health connect settings or check permissions
-                        viewModel.checkHealthPermissions()
+                        showHealthDisclosure = true
                     }
                 )
             }
@@ -401,6 +397,112 @@ fun SettingsScreen(
             dismissButton = {
                 TextButton(onClick = { showResetDialog = false }) {
                     Text("Cancel", color = TextSecondary)
+                }
+            }
+        )
+    }
+
+    // Prominent In-App Accessibility Disclosure Dialog (Google Play Compliant)
+    if (showAccessibilityDisclosure) {
+        AlertDialog(
+            onDismissRequest = { showAccessibilityDisclosure = false },
+            containerColor = CardSurface,
+            title = {
+                Text(
+                    text = "Accessibility Service Disclosure",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextMain
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                    Text(
+                        text = "EarnReels uses the Android Accessibility Service exclusively to detect when Instagram Reels or YouTube Shorts are currently on-screen, in order to enforce your daily time allowance.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "• Zero Personal Data: EarnReels does NOT read, collect, or store personal messages, keystrokes, passwords, or contacts.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "• 100% Offline: Zero screen content is transmitted off your device. The app has no internet permission.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "• User Controlled: You can disable this permission at any time in Android Settings or turn off blocking above.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showAccessibilityDisclosure = false
+                        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                        }
+                        context.startActivity(intent)
+                    }
+                ) {
+                    Text("Continue to Settings", color = LimeAccent)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAccessibilityDisclosure = false }) {
+                    Text("Cancel", color = TextSecondary)
+                }
+            }
+        )
+    }
+
+    // Health Connect Permission Disclosure Dialog
+    if (showHealthDisclosure) {
+        AlertDialog(
+            onDismissRequest = { showHealthDisclosure = false },
+            containerColor = CardSurface,
+            title = {
+                Text(
+                    text = "Health Connect Privacy",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = TextMain
+                )
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(Spacing.sm)) {
+                    Text(
+                        text = "EarnReels connects to Health Connect to read two specific daily metrics:",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "1. Daily Steps: Aggregated total steps to award allowance when your goal is reached.\n2. Sleep Duration: Last night's sleep duration and bedtime adherence.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                    Text(
+                        text = "• No health data is shared, sold, or uploaded.\n• No health stages (REM, Deep), calories, or heart rate are accessed.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = TextSecondary
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        showHealthDisclosure = false
+                        viewModel.checkHealthPermissions()
+                    }
+                ) {
+                    Text("Manage Permissions", color = LimeAccent)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showHealthDisclosure = false }) {
+                    Text("Close", color = TextSecondary)
                 }
             }
         )

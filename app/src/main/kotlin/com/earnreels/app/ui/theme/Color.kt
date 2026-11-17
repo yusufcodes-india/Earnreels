@@ -2,24 +2,33 @@ package com.earnreels.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// EarnReels Deep Matte OLED Minimalist Palette
-val MatteBlackBackground = Color(0xFF0A0A0A)    // Deep matte black calm on OLED screens without glare
-val CharcoalBackground = MatteBlackBackground   // Unified background reference
-val CardSurface = Color(0xFF161616)            // Subtle dark charcoal for cards and surfaces
-val CardSurfaceVariant = Color(0xFF1E1E1E)     // Elevated surface variant
-val BorderSubtle = Color(0xFF282828)           // Subtle border separation
+// EarnReels "Calm Graphite" Design Palette
+val GraphiteBackground = Color(0xFF101113)     // Background: deep calm graphite (#101113)
+val CardSurface = Color(0xFF17191C)            // Card surface: flat dark graphite (#17191C)
+val CardSurfaceVariant = Color(0xFF1E2124)     // Elevated surface: soft graphite (#1E2124)
+val BorderSubtle = Color(0xFF26292D)           // Border / divider: muted tone (#26292D)
 
-val AccentWhite = Color(0xFFFFFFFF)            // Pure white for active block switches & highlights
-val LimeAccent = AccentWhite                   // Backward-compatibility alias for active indicators
-val SleepAccent = Color(0xFF8E8E93)            // Muted neutral gray accent
-val TextMain = Color(0xFFF2F2F2)               // Soft off-white for crisp readability
-val TextSecondary = Color(0xFF8E8E93)          // Muted neutral gray for timestamps and stats
-val ErrorRed = Color(0xFFFF453A)               // OLED soft red for blocked state / errors
+val PrimaryText = Color(0xFFEDEDED)            // Primary text: soft off-white (#EDEDED)
+val SecondaryText = Color(0xFFA1A6AB)          // Secondary text: muted gray (#A1A6AB)
+
+val ProgressAccent = Color(0xFF8AB4F8)         // Progress accent: calm soft blue (#8AB4F8)
+val SuccessAccent = Color(0xFF7FB89A)          // Success / completed: muted sage green (#7FB89A)
+val SleepAccent = Color(0xFF9A8FBF)            // Sleep accent: soft muted lavender (#9A8FBF)
+val BlockedRed = Color(0xFFD98B80)             // Blocked state / error: muted terracotta (#D98B80)
+
+// Aliases for seamless backward compatibility across existing files
+val CharcoalBackground = GraphiteBackground
+val MatteBlackBackground = GraphiteBackground
+val TextMain = PrimaryText
+val TextSecondary = SecondaryText
+val LimeAccent = ProgressAccent                // Maps existing Lime references to calm ProgressAccent
+val ErrorRed = BlockedRed
+val AccentWhite = PrimaryText
 
 // Light-fallback support (maintaining clean contrast)
-val LightBackground = Color(0xFFF8FAFC)
+val LightBackground = Color(0xFFF6F8FA)
 val LightSurface = Color(0xFFFFFFFF)
-val LightBorder = Color(0xFFE2E8F0)
-val LightTextMain = Color(0xFF0F172A)
-val LightTextSecondary = Color(0xFF64748B)
-val LightLimeAccent = Color(0xFF0A0A0A)
+val LightBorder = Color(0xFFD8DEE4)
+val LightTextMain = Color(0xFF1F2328)
+val LightTextSecondary = Color(0xFF656D76)
+val LightLimeAccent = ProgressAccent

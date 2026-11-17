@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.os.SystemClock
 import com.earnreels.app.data.local.EarnReelsDatabase
 import com.earnreels.app.data.repository.FocusRepository
 import com.earnreels.app.data.repository.RewardsRepository
@@ -40,6 +41,7 @@ class FocusTimerService : Service() {
     private var sessionId: Long = 0
     private var linkedGoalId: Long = 0
     private var linkedGoalTitle: String? = null
+    private var targetEndTimeRealtime: Long = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -67,6 +69,7 @@ class FocusTimerService : Service() {
 
     private fun startCountdown() {
         timerJob?.cancel()
+        targetEndTimeRealtime = SystemClock.elapsedRealtime() + remainingSeconds * 1000L
         _statusFlow.value = TimerStatus.RUNNING
         _remainingSecondsFlow.value = remainingSeconds
         _totalSecondsFlow.value = totalSeconds
@@ -80,7 +83,8 @@ class FocusTimerService : Service() {
         timerJob = serviceScope.launch {
             while (remainingSeconds > 0) {
                 delay(1000L)
-                remainingSeconds--
+                val now = SystemClock.elapsedRealtime()
+                remainingSeconds = ((targetEndTimeRealtime - now + 999) / 1000).toInt().coerceAtLeast(0)
                 _remainingSecondsFlow.value = remainingSeconds
 
                 val updatedNotification = FocusNotificationHelper.buildNotification(
@@ -99,6 +103,9 @@ class FocusTimerService : Service() {
 
     private fun pauseCountdown() {
         timerJob?.cancel()
+        val now = SystemClock.elapsedRealtime()
+        remainingSeconds = ((targetEndTimeRealtime - now + 999) / 1000).toInt().coerceAtLeast(0)
+        _remainingSecondsFlow.value = remainingSeconds
         _statusFlow.value = TimerStatus.PAUSED
         val notification = FocusNotificationHelper.buildNotification(
             this, remainingSeconds, totalSeconds, isPaused = true
@@ -108,10 +115,12 @@ class FocusTimerService : Service() {
 
     private fun resumeCountdown() {
         _statusFlow.value = TimerStatus.RUNNING
+        targetEndTimeRealtime = SystemClock.elapsedRealtime() + remainingSeconds * 1000L
         timerJob = serviceScope.launch {
             while (remainingSeconds > 0) {
                 delay(1000L)
-                remainingSeconds--
+                val now = SystemClock.elapsedRealtime()
+                remainingSeconds = ((targetEndTimeRealtime - now + 999) / 1000).toInt().coerceAtLeast(0)
                 _remainingSecondsFlow.value = remainingSeconds
 
                 val updatedNotification = FocusNotificationHelper.buildNotification(

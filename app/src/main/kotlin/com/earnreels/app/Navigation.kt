@@ -40,7 +40,8 @@ fun MainNavigation() {
         val focusRepo = FocusRepository(db.focusSessionDao())
         val rewardsRepo = RewardsRepository(db.reelsAllowanceDao(), db.rewardTransactionDao())
         val streakRepo = StreakRepository(db.streakDao(), rewardsRepo)
-        FocusViewModel(focusRepo, streakRepo)
+        val goalRepo = com.earnreels.app.data.repository.StudyGoalRepository(db.studyGoalDao())
+        FocusViewModel(focusRepo, streakRepo, goalRepo)
     }
 
     NavDisplay(
@@ -50,21 +51,7 @@ fun MainNavigation() {
             entry<TodayNavKey> {
                 TodayScreen(
                     viewModel = todayViewModel,
-                    onStartFocus = {
-                        focusViewModel.setLinkedGoal(null, null)
-                        backStack.add(FocusNavKey)
-                    },
-                    onStartGoalFocus = { goalId, goalTitle, remainingMins ->
-                        focusViewModel.setLinkedGoal(goalId, goalTitle)
-                        val duration = when {
-                            remainingMins >= 60 -> 60
-                            remainingMins >= 45 -> 45
-                            remainingMins >= 25 -> 25
-                            else -> 15
-                        }
-                        focusViewModel.selectDuration(duration)
-                        backStack.add(FocusNavKey)
-                    },
+                    onStartFocus = { backStack.add(FocusNavKey) },
                     onOpenSettings = { backStack.add(SettingsNavKey) },
                     onSelectTab = { tab ->
                         when (tab) {

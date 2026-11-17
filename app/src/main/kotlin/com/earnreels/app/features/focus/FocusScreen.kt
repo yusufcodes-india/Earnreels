@@ -18,18 +18,29 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
@@ -39,20 +50,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.earnreels.app.domain.model.FocusSession
+import com.earnreels.app.domain.model.StudyGoal
+import com.earnreels.app.domain.model.StudyGoalCategory
 import com.earnreels.app.ui.components.PrimaryButton
-import com.earnreels.app.ui.components.StreakBadge
+import com.earnreels.app.ui.theme.BlockedRed
 import com.earnreels.app.ui.theme.BorderSubtle
+import com.earnreels.app.ui.theme.ButtonShape
 import com.earnreels.app.ui.theme.CardShape
 import com.earnreels.app.ui.theme.CardSurface
 import com.earnreels.app.ui.theme.CardSurfaceVariant
-import com.earnreels.app.ui.theme.CharcoalBackground
 import com.earnreels.app.ui.theme.EarnReelsTheme
-import com.earnreels.app.ui.theme.ErrorRed
-import com.earnreels.app.ui.theme.LimeAccent
+import com.earnreels.app.ui.theme.GraphiteBackground
 import com.earnreels.app.ui.theme.PillShape
+import com.earnreels.app.ui.theme.PrimaryText
+import com.earnreels.app.ui.theme.ProgressAccent
+import com.earnreels.app.ui.theme.SecondaryText
 import com.earnreels.app.ui.theme.Spacing
-import com.earnreels.app.ui.theme.TextMain
-import com.earnreels.app.ui.theme.TextSecondary
 
 @Composable
 fun FocusScreen(
@@ -66,9 +79,10 @@ fun FocusScreen(
     val remainingSeconds by viewModel.remainingSeconds.collectAsStateWithLifecycle()
     val totalSeconds by viewModel.totalSeconds.collectAsStateWithLifecycle()
     val todayCompletedMinutes by viewModel.todayCompletedMinutes.collectAsStateWithLifecycle()
-    val streak by viewModel.focusStreak.collectAsStateWithLifecycle()
     val activeGoalTitle by viewModel.activeGoalTitle.collectAsStateWithLifecycle()
     val linkedGoalTitle by viewModel.linkedGoalTitle.collectAsStateWithLifecycle()
+    val studyGoals by viewModel.studyGoals.collectAsStateWithLifecycle()
+    val isAddGoalDialogOpen by viewModel.isAddGoalDialogOpen.collectAsStateWithLifecycle()
 
     FocusTimerContent(
         selectedDuration = selectedDuration,
@@ -76,13 +90,18 @@ fun FocusScreen(
         remainingSeconds = remainingSeconds,
         totalSeconds = totalSeconds,
         todayCompletedMinutes = todayCompletedMinutes,
-        streakDays = streak?.currentStreak ?: 0,
         goalTitle = activeGoalTitle ?: linkedGoalTitle,
+        studyGoals = studyGoals,
+        isAddGoalDialogOpen = isAddGoalDialogOpen,
         onSelectDuration = { viewModel.selectDuration(it) },
         onStart = { viewModel.startSession(context) },
         onPause = { viewModel.pauseSession(context) },
         onResume = { viewModel.resumeSession(context) },
         onCancel = { viewModel.cancelSession(context) },
+        onSelectGoal = { id, title -> viewModel.setLinkedGoal(id, title) },
+        onOpenAddGoalDialog = { viewModel.openAddGoalDialog() },
+        onCloseAddGoalDialog = { viewModel.closeAddGoalDialog() },
+        onAddGoal = { title, mins, cat -> viewModel.addStudyGoal(title, mins, cat) },
         onBack = onBack,
         modifier = modifier
     )
@@ -95,13 +114,18 @@ fun FocusTimerContent(
     remainingSeconds: Int,
     totalSeconds: Int,
     todayCompletedMinutes: Int,
-    streakDays: Int,
     goalTitle: String? = null,
+    studyGoals: List<StudyGoal> = emptyList(),
+    isAddGoalDialogOpen: Boolean = false,
     onSelectDuration: (Int) -> Unit,
     onStart: () -> Unit,
     onPause: () -> Unit,
     onResume: () -> Unit,
     onCancel: () -> Unit,
+    onSelectGoal: (Long?, String?) -> Unit = { _, _ -> },
+    onOpenAddGoalDialog: () -> Unit = {},
+    onCloseAddGoalDialog: () -> Unit = {},
+    onAddGoal: (String, Int, StudyGoalCategory) -> Unit = { _, _, _ -> },
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -125,14 +149,14 @@ fun FocusTimerContent(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(CharcoalBackground)
+            .background(GraphiteBackground)
             .padding(horizontal = Spacing.screenMargin),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween
     ) {
         // Top Header
         Column(modifier = Modifier.fillMaxWidth()) {
-            Spacer(modifier = Modifier.height(Spacing.lg))
+            Spacer(modifier = Modifier.height(Spacing.base))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -142,51 +166,51 @@ fun FocusTimerContent(
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = "Close",
-                        tint = TextSecondary
+                        tint = SecondaryText
                     )
                 }
 
                 Text(
-                    text = "Focus Timer",
-                    style = MaterialTheme.typography.titleLarge,
-                    color = TextMain
+                    text = "Focus",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = PrimaryText
                 )
 
-                StreakBadge(streakDays = streakDays)
+                Spacer(modifier = Modifier.size(48.dp)) // Equal balance
             }
         }
 
-        // Active Linked Goal Badge
+        // Active Linked Goal Pill
         if (!goalTitle.isNullOrBlank()) {
             Box(
                 modifier = Modifier
                     .background(CardSurface, PillShape)
-                    .border(1.dp, LimeAccent.copy(alpha = 0.5f), PillShape)
-                    .padding(horizontal = Spacing.md, vertical = Spacing.xs)
+                    .border(1.dp, BorderSubtle, PillShape)
+                    .padding(horizontal = Spacing.md, vertical = Spacing.fine)
             ) {
                 Text(
-                    text = "🎯 $goalTitle",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = LimeAccent
+                    text = "Goal: $goalTitle",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = ProgressAccent
                 )
             }
         }
 
-        // Circular Timer Display
+        // Thin Circular Timer Display
         Box(
             contentAlignment = Alignment.Center,
-            modifier = Modifier.size(260.dp)
+            modifier = Modifier.size(240.dp)
         ) {
-            Canvas(modifier = Modifier.size(260.dp)) {
-                val stroke = 14.dp.toPx()
+            Canvas(modifier = Modifier.size(240.dp)) {
+                val stroke = 8.dp.toPx()
                 // Track
                 drawCircle(
                     color = BorderSubtle,
                     style = Stroke(width = stroke)
                 )
-                // Active Lime Ring
+                // Active Progress Ring in calm blue
                 drawArc(
-                    color = LimeAccent,
+                    color = ProgressAccent,
                     startAngle = -90f,
                     sweepAngle = 360f * animatedProgress,
                     useCenter = false,
@@ -200,18 +224,18 @@ fun FocusTimerContent(
                 Text(
                     text = String.format("%02d:%02d", minutes, seconds),
                     style = MaterialTheme.typography.displayLarge,
-                    color = TextMain
+                    color = PrimaryText
                 )
                 Spacer(modifier = Modifier.height(Spacing.fine))
                 Text(
                     text = when (status) {
-                        TimerStatus.RUNNING -> "STAY FOCUSED"
-                        TimerStatus.PAUSED -> "PAUSED"
-                        TimerStatus.COMPLETED -> "SESSION COMPLETED"
-                        TimerStatus.IDLE -> "READY"
+                        TimerStatus.RUNNING -> "In focus"
+                        TimerStatus.PAUSED -> "Paused"
+                        TimerStatus.COMPLETED -> "Completed"
+                        TimerStatus.IDLE -> "Ready"
                     },
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (isRunning) LimeAccent else TextSecondary
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (isRunning) ProgressAccent else SecondaryText
                 )
             }
         }
@@ -222,11 +246,11 @@ fun FocusTimerContent(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = "Session Length",
-                style = MaterialTheme.typography.labelMedium,
-                color = TextSecondary
+                text = "Session length",
+                style = MaterialTheme.typography.labelSmall,
+                color = SecondaryText
             )
-            Spacer(modifier = Modifier.height(Spacing.md))
+            Spacer(modifier = Modifier.height(Spacing.sm))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.sm),
                 modifier = Modifier.fillMaxWidth()
@@ -236,14 +260,15 @@ fun FocusTimerContent(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(46.dp)
+                            .height(44.dp)
                             .background(
-                                color = if (isSelected) LimeAccent else CardSurface,
+                                color = if (isSelected) CardSurfaceVariant else CardSurface,
                                 shape = PillShape
                             )
-                            .then(
-                                if (!isSelected) Modifier.background(CardSurface, PillShape)
-                                else Modifier
+                            .border(
+                                width = 1.dp,
+                                color = if (isSelected) ProgressAccent else BorderSubtle,
+                                shape = PillShape
                             )
                             .clickable(enabled = isIdle) {
                                 onSelectDuration(duration)
@@ -252,15 +277,15 @@ fun FocusTimerContent(
                     ) {
                         Text(
                             text = "${duration}m",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = if (isSelected) CharcoalBackground else TextMain
+                            style = MaterialTheme.typography.labelMedium,
+                            color = if (isSelected) PrimaryText else SecondaryText
                         )
                     }
                 }
             }
         }
 
-        // Actions & Stats
+        // Action Buttons
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -278,7 +303,7 @@ fun FocusTimerContent(
                 ) {
                     // Cancel Button
                     Card(
-                        shape = PillShape,
+                        shape = ButtonShape,
                         colors = CardDefaults.cardColors(containerColor = CardSurface),
                         border = BorderStroke(1.dp, BorderSubtle),
                         modifier = Modifier
@@ -293,15 +318,16 @@ fun FocusTimerContent(
                             Text(
                                 text = "Cancel",
                                 style = MaterialTheme.typography.labelLarge,
-                                color = ErrorRed
+                                color = BlockedRed
                             )
                         }
                     }
 
                     // Pause / Resume Button
                     Card(
-                        shape = PillShape,
-                        colors = CardDefaults.cardColors(containerColor = LimeAccent),
+                        shape = ButtonShape,
+                        colors = CardDefaults.cardColors(containerColor = CardSurfaceVariant),
+                        border = BorderStroke(1.dp, ProgressAccent),
                         modifier = Modifier
                             .weight(1f)
                             .height(Spacing.buttonHeight)
@@ -318,13 +344,13 @@ fun FocusTimerContent(
                             Icon(
                                 imageVector = if (isRunning) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
                                 contentDescription = if (isRunning) "Pause" else "Resume",
-                                tint = CharcoalBackground
+                                tint = PrimaryText
                             )
                             Spacer(modifier = Modifier.size(Spacing.sm))
                             Text(
                                 text = if (isRunning) "Pause" else "Resume",
                                 style = MaterialTheme.typography.labelLarge,
-                                color = CharcoalBackground
+                                color = PrimaryText
                             )
                         }
                     }
@@ -336,7 +362,7 @@ fun FocusTimerContent(
             // Completed Focus Today Stats Card
             Card(
                 shape = CardShape,
-                colors = CardDefaults.cardColors(containerColor = CardSurfaceVariant),
+                colors = CardDefaults.cardColors(containerColor = CardSurface),
                 border = BorderStroke(1.dp, BorderSubtle),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -350,12 +376,12 @@ fun FocusTimerContent(
                     Text(
                         text = "Completed today",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = TextSecondary
+                        color = SecondaryText
                     )
                     Text(
-                        text = "$todayCompletedMinutes minutes",
+                        text = "$todayCompletedMinutes min",
                         style = MaterialTheme.typography.titleSmall,
-                        color = LimeAccent
+                        color = PrimaryText
                     )
                 }
             }
@@ -373,7 +399,6 @@ fun FocusTimerPreview() {
             remainingSeconds = 21 * 60 + 40,
             totalSeconds = 25 * 60,
             todayCompletedMinutes = 25,
-            streakDays = 4,
             goalTitle = "Calculus Lecture 4",
             onSelectDuration = {},
             onStart = {},

@@ -27,6 +27,7 @@ class ReelsBlockerService : AccessibilityService() {
     private lateinit var preferences: UserPreferences
 
     private var isCurrentlyOnReelsOrShorts = false
+    private var lastBlockTriggerTime = 0L
 
     override fun onCreate() {
         super.onCreate()
@@ -87,13 +88,15 @@ class ReelsBlockerService : AccessibilityService() {
         val pkg = event.packageName?.toString() ?: ""
 
         return try {
-            if (pkg == INSTAGRAM_PACKAGE) {
-                findTextOrDescription(rootNode, listOf("reels", "reel", "watch reels", "audio for this reel"))
+            val isMatch = if (pkg == INSTAGRAM_PACKAGE) {
+                findTextOrDescription(rootNode, listOf("reels", "reel", "watch reels", "audio for this reel", "clips_viewer"))
             } else if (pkg == YOUTUBE_PACKAGE) {
-                findTextOrDescription(rootNode, listOf("shorts", "short", "youtube shorts", "remix this video"))
+                findTextOrDescription(rootNode, listOf("shorts", "youtube shorts", "remix this video", "shorts_container", "reel_recycler"))
             } else {
                 false
             }
+            rootNode.recycle()
+            isMatch
         } catch (e: Exception) {
             false
         }
@@ -113,8 +116,10 @@ class ReelsBlockerService : AccessibilityService() {
         }
 
         for (i in 0 until node.childCount) {
-            val child = node.getChild(i)
-            if (findTextOrDescription(child, keywords)) {
+            val child = node.getChild(i) ?: continue
+            val found = findTextOrDescription(child, keywords)
+            child.recycle()
+            if (found) {
                 return true
             }
         }
@@ -122,6 +127,13 @@ class ReelsBlockerService : AccessibilityService() {
     }
 
     private fun triggerBlocker() {
+        val now = System.currentTimeMillis()
+        if (now - lastBlockTriggerTime < 2000L) {
+            // Cooldown active to prevent infinite loop or OS event flooding
+            return
+        }
+        lastBlockTriggerTime = now
+
         stopWatchTicker()
         // Take user back safely
         performGlobalAction(GLOBAL_ACTION_BACK)
