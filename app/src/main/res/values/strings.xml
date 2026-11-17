@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">EarnReels</string>
+    <string name="accessibility_service_description">EarnReels uses this service solely to detect when Instagram Reels or YouTube Shorts are actively on screen, deduct your earned allowance, and display a calm reminder when your balance is zero. It never reads keystrokes, messages, or screen contents.</string>
+    <string name="health_connect_rationale">EarnReels reads your daily steps and sleep duration from Health Connect to reward you with Reels time. No health data ever leaves your device.</string>
 </resources>

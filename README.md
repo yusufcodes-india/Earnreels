@@ -2,36 +2,66 @@
 
 > **Turn healthy real-world habits into intentional Reels & Shorts time.**
 
-EarnReels is a local-first, privacy-focused Android app that creates a balanced relationship with short-form video. Instead of relying on infinite willpower or punitive app lockers, EarnReels gives you a limited daily allowance of Instagram Reels and YouTube Shorts time that you earn through positive routines: deep focus sessions, daily steps, workouts, and a consistent sleep routine.
+EarnReels is a local-first, privacy-focused native Android app that builds a healthier relationship with short-form video. Instead of relying on brute willpower or punitive blockers, EarnReels gives you a limited daily allowance of Instagram Reels and YouTube Shorts that you earn through positive everyday routines: deep focus blocks, step goals, workouts, and a consistent sleep routine.
 
 ---
 
 ## 💡 How It Works
 
-1. **Build Positive Habits**: Complete a Pomodoro focus block, hit your step goal, log your daily workout, or sleep on time.
-2. **Earn Reels Minutes**: Every completed habit rewards you with actual minutes stored in your **Reels Wallet**.
-3. **Enjoy Guilt-Free Video Time**: Open Instagram Reels or YouTube Shorts; your allowance ticks down in real time.
-4. **Calm Restraint**: When your wallet hits zero, a calm, respectful blocker guides you back to EarnReels to recharge your balance.
+1. **Build Positive Habits**: Complete an uninterrupted focus session, hit your daily step goal, log your daily workout, or maintain your sleep routine.
+2. **Earn Reels Minutes**: Every completed habit rewards you with actual minutes deposited into your **Reels Wallet**.
+3. **Enjoy Guilt-Free Video Time**: Open Instagram Reels or YouTube Shorts; your allowance ticks down in real time while you watch.
+4. **Calm Restraint**: When your wallet hits zero, a calm, respectful full-screen reminder guides you back to EarnReels to recharge your balance.
 
 ---
 
 ## 🎨 Visual Identity & Philosophy
 
-- **Dark Charcoal Surface**: `#0E1116` background and `#161B22` card surfaces create a calming, premium atmosphere.
-- **Vibrant Lime Accent**: `#B7F542` highlights earned time and primary actions with high legibility.
+- **Dark Charcoal Canvas**: `#0E1116` background and `#161B22` card surfaces create a distraction-free, restful dashboard.
+- **Vibrant Lime Accent**: `#B7F542` highlights earned time and primary actions with crisp legibility.
 - **Soft Violet Sleep Accent**: `#8B7CF6` provides restful visual hierarchy for sleep data.
-- **Zero Gamification Noise**: No loud badges, no XP points, no social feeds, and no manipulative streaks. Just clear, honest metrics.
+- **Zero Gamification Clutter**: No intrusive badges, no XP points, no social feeds, and no manipulative streaks. Just clear, honest metrics.
 
 ---
 
 ## 💎 Features (MVP)
 
-- ⏱️ **Focus Timer**: Configurable 15, 25, 45, or 60-minute Pomodoro sessions with persistent background timing.
-- 👟 **Steps Tracking**: Reads daily steps via Health Connect aggregate queries (default 8,000 steps).
-- 🏋️ **Workout Logging**: Quick one-tap workout logging (Gym, Running, Home, Yoga, Other).
-- 🌙 **Sleep Routine**: Reads your previous night's sleep duration and bedtime adherence without intrusive sleep-stage scoring.
-- 💳 **Reels Wallet**: Real-time remaining allowance ring (daily default cap: 30 minutes, resets at midnight).
-- 🛡️ **Intelligent Screen Blocker**: Detects only Reels and Shorts via an on-device `AccessibilityService` without blocking the rest of Instagram or YouTube.
+### ⏱️ Focus Timer
+- Pomodoro-style focus timer with preset lengths: **15, 25, 45, or 60 minutes** (default: 25 minutes).
+- Reliable background execution powered by an Android Foreground Service with live notification progress.
+- Tracks daily completed focus minutes and daily focus streaks.
+- Rewards: `+3m` (15m), `+5m` (25m), `+8m` (45m), `+10m` (60m).
+
+### 👟 Daily Steps (Health Connect)
+- Reads daily steps using Health Connect aggregate queries to avoid double-counting.
+- Customizable daily step goal (default: 8,000 steps).
+- Progress indicator on the home dashboard.
+- Awards `+10m` Reels allowance once per day when the goal is reached.
+- Graceful fallback when Health Connect is unavailable or permissions are denied.
+
+### 🏋️ Workout Logging
+- Simple one-tap workout logging with optional types: Gym, Running, Home workout, Yoga, Other.
+- Can be logged once per day to earn `+15m` Reels allowance.
+- Maintains a daily workout streak.
+
+### 🌙 Sleep Routine (Health Connect)
+- Reads the previous night's sleep session from Health Connect.
+- Customizable target bedtime (default: 11:00 PM) and minimum sleep duration (default: 7 hours).
+- Awards `+5m` when falling asleep within 30 minutes of target bedtime.
+- Awards `+5m` when total sleep duration meets the minimum goal.
+- Zero sleep-stage judging, scoring, or clutter on the main screen.
+
+### 💳 Reels Wallet
+- Circular countdown ring showing remaining Reels/Shorts minutes on the home screen.
+- Default daily cap of 30 minutes to prevent binge hoarding.
+- Earned-but-unused allowance resets every night at midnight via WorkManager.
+- Full breakdown of today's earnings and transactions.
+
+### 🛡️ Smart Reels & Shorts Blocker
+- Uses an on-device Android `AccessibilityService` to detect when Instagram Reels or YouTube Shorts are actively in view.
+- Screen-level blocking: keeps the rest of Instagram and YouTube accessible, only intercepting the short-form video surfaces.
+- Optional **Strict Mode** in Settings to block the entire app when allowance is zero.
+- Calm blocker screen: "No Reels time left" with next suggested action and a button to return to EarnReels.
 
 ---
 
@@ -50,92 +80,74 @@ EarnReels is a local-first, privacy-focused Android app that creates a balanced 
 | **3-Day Streak** | All habits completed 3 days in a row | `+10 min bonus` |
 | **7-Day Streak** | All habits completed 7 days in a row | `+20 min bonus` |
 
-*Note: Daily allowance is capped at 30 minutes by default and unused allowance expires at midnight to prevent binge hoarding.*
-
 ---
 
-## 🔒 Privacy & Safety First
+## 🔒 Privacy & Safety Guarantee
 
-- **100% Offline**: The app contains **no internet permission**, ensuring your personal habits never leave your phone.
-- **No Cloud Sync or Accounts**: Zero registration, no tracking IDs, and no third-party analytics.
-- **On-Device Detection**: The Accessibility Service only inspects the active window title/class to identify Reels/Shorts surfaces. It never reads keystrokes, messages, or screen contents.
+- **100% On-Device & Offline**: The app declares **no internet permission**, ensuring your personal habits never leave your phone.
+- **No Accounts or Cloud Storage**: Zero sign-ups, no tracking IDs, and no third-party analytics.
+- **Targeted Accessibility Inspection**: The Accessibility Service only checks window metadata for Reels/Shorts keywords. It never reads keystrokes, personal messages, passwords, or contacts.
 
 ---
 
 ## 📱 Permissions Explained
 
-| Permission | Reason |
-|---|---|
-| `health.READ_STEPS` | Reads daily aggregate steps from Google Health Connect. |
-| `health.READ_SLEEP` | Checks last night's sleep session start/end time. |
-| `FOREGROUND_SERVICE` | Ensures the focus timer completes accurately when the screen is off. |
-| `POST_NOTIFICATIONS` | Alerts you when your focus session finishes. |
-| `SYSTEM_ALERT_WINDOW` | Renders the calm blocker overlay when Reels/Shorts time is exhausted. |
-| `BIND_ACCESSIBILITY_SERVICE` | Detects when Instagram Reels or YouTube Shorts are actively in view. |
+| Permission | Type | Reason |
+|---|---|---|
+| `health.READ_STEPS` | Health Connect | Reads daily aggregate steps. |
+| `health.READ_SLEEP` | Health Connect | Reads previous night's sleep duration and bedtime. |
+| `FOREGROUND_SERVICE` | Normal | Keeps focus timer active when screen is turned off. |
+| `POST_NOTIFICATIONS` | Runtime (API 33+) | Displays focus timer progress notification. |
+| `SYSTEM_ALERT_WINDOW` | Special | Displays calm blocker overlay when allowance reaches zero. |
+| `BIND_ACCESSIBILITY_SERVICE` | System | Detects Instagram Reels and YouTube Shorts on screen. |
+| `RECEIVE_BOOT_COMPLETED` | Normal | Re-schedules midnight reset worker after device reboot. |
 
 ---
 
-## 🛠️ Project Architecture & Tech Stack
+## 📲 How to Install the Debug APK
 
-```
-app/src/main/kotlin/com/earnreels/app/
-├── ui/
-│   ├── theme/           # Color, Type, Shape, Spacing, Theme
-│   ├── components/      # ReelsWalletRing, HabitCard, RewardCard, PrimaryButton, BottomNavBar, StreakBadge
-│   └── navigation/      # Nav destinations and bottom tab routing
-├── features/
-│   ├── today/           # Main focus dashboard
-│   ├── focus/           # Pomodoro timer & foreground service
-│   ├── rewards/         # Wallet breakdown & reward rules
-│   ├── history/         # 7-day retrospective
-│   └── settings/        # Goals, bedtime, and blocking modes
-├── domain/              # Clean architecture models & use cases
-├── data/
-│   ├── local/           # Room Database, DAOs & Entities
-│   ├── preferences/     # DataStore User Preferences
-│   └── repository/      # Repository implementations
-├── health/              # Health Connect client & queries
-├── blocking/            # AccessibilityService & Overlay manager
-└── worker/              # WorkManager midnight reset task
-```
-
-- **Kotlin & Coroutines/Flow**
-- **Jetpack Compose & Material 3**
-- **Room Database** (local persistence)
-- **DataStore Preferences**
-- **Health Connect SDK**
-- **WorkManager**
+1. Connect your Android phone via USB and enable **USB Debugging** in Developer Options.
+2. Install the built debug APK directly using adb:
+   ```bash
+   adb install -r app/build/outputs/apk/debug/app-debug.apk
+   ```
+3. Open **EarnReels** on your phone.
+4. Go to **Settings** in the app:
+   - Tap **Accessibility Permission** → Enable **EarnReels** in your phone's Accessibility settings.
+   - Tap **Health Connect Status** → Grant read permissions for Steps and Sleep.
 
 ---
 
-## 🚀 Building & Testing
+## 🛠️ Build & Development Setup
 
 ### Prerequisites
-- JDK 21
+- macOS, Linux, or Windows
+- JDK 21 (configured as `JAVA_HOME`)
 - Android SDK 36 (Minimum SDK: 29)
 
-### Commands
+### Build Commands
 ```bash
-# Run unit tests
+# Run unit test suite
 ./gradlew test
 
-# Run Android lint
-./gradlew lint
+# Run Android Lint
+./gradlew lintDebug
 
 # Build debug APK
 ./gradlew assembleDebug
 ```
-Output APK is located at: `app/build/outputs/apk/debug/app-debug.apk`
+The output APK is generated at:
+`app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
-## 🗺️ Roadmap
+## 🗺️ Roadmap & Implementation Status
 - [x] Phase 1: Architecture, Gradle 9.1 & Material 3 Dark Design System
 - [x] Phase 2: Local Database (Room), DAOs, Entities, Preferences & Use Cases
 - [x] Phase 3: Pomodoro Focus Timer, Foreground Service & Focus Rewards
-- [ ] Phase 4: Reels Wallet & Reward Transaction Engine
-- [ ] Phase 5: Health Connect Steps Integration
-- [ ] Phase 6: Health Connect Sleep Routine Integration
-- [ ] Phase 7: Workout Logging & Daily Habit Streaks
-- [ ] Phase 8: Accessibility Service & Reels/Shorts Blocker
-- [ ] Phase 9: Settings, Strict Mode & History View
+- [x] Phase 4: Reels Wallet, Midnight Reset Worker & Rewards Screen
+- [x] Phase 5: Health Connect Steps Integration
+- [x] Phase 6: Health Connect Sleep Routine Integration
+- [x] Phase 7: Workout Logging & Daily Habit Streaks
+- [x] Phase 8: Accessibility Service & Reels/Shorts Blocker
+- [x] Phase 9: Settings, Strict Mode, Navigation & History View
