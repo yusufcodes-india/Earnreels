@@ -34,7 +34,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.earnreels.app.domain.model.FocusSession
 import com.earnreels.app.ui.components.PrimaryButton
 import com.earnreels.app.ui.components.StreakBadge
@@ -43,14 +45,13 @@ import com.earnreels.app.ui.theme.CardShape
 import com.earnreels.app.ui.theme.CardSurface
 import com.earnreels.app.ui.theme.CardSurfaceVariant
 import com.earnreels.app.ui.theme.CharcoalBackground
+import com.earnreels.app.ui.theme.EarnReelsTheme
 import com.earnreels.app.ui.theme.ErrorRed
 import com.earnreels.app.ui.theme.LimeAccent
 import com.earnreels.app.ui.theme.PillShape
 import com.earnreels.app.ui.theme.Spacing
 import com.earnreels.app.ui.theme.TextMain
 import com.earnreels.app.ui.theme.TextSecondary
-
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 
 @Composable
 fun FocusScreen(
@@ -66,6 +67,39 @@ fun FocusScreen(
     val todayCompletedMinutes by viewModel.todayCompletedMinutes.collectAsStateWithLifecycle()
     val streak by viewModel.focusStreak.collectAsStateWithLifecycle()
 
+    FocusTimerContent(
+        selectedDuration = selectedDuration,
+        status = status,
+        remainingSeconds = remainingSeconds,
+        totalSeconds = totalSeconds,
+        todayCompletedMinutes = todayCompletedMinutes,
+        streakDays = streak?.currentStreak ?: 0,
+        onSelectDuration = { viewModel.selectDuration(it) },
+        onStart = { viewModel.startSession(context) },
+        onPause = { viewModel.pauseSession(context) },
+        onResume = { viewModel.resumeSession(context) },
+        onCancel = { viewModel.cancelSession(context) },
+        onBack = onBack,
+        modifier = modifier
+    )
+}
+
+@Composable
+fun FocusTimerContent(
+    selectedDuration: Int,
+    status: TimerStatus,
+    remainingSeconds: Int,
+    totalSeconds: Int,
+    todayCompletedMinutes: Int,
+    streakDays: Int,
+    onSelectDuration: (Int) -> Unit,
+    onStart: () -> Unit,
+    onPause: () -> Unit,
+    onResume: () -> Unit,
+    onCancel: () -> Unit,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val isRunning = status == TimerStatus.RUNNING
     val isPaused = status == TimerStatus.PAUSED
     val isIdle = status == TimerStatus.IDLE || status == TimerStatus.COMPLETED
@@ -113,7 +147,7 @@ fun FocusScreen(
                     color = TextMain
                 )
 
-                StreakBadge(streakDays = streak?.currentStreak ?: 0)
+                StreakBadge(streakDays = streakDays)
             }
         }
 
@@ -191,7 +225,7 @@ fun FocusScreen(
                                 else Modifier
                             )
                             .clickable(enabled = isIdle) {
-                                viewModel.selectDuration(duration)
+                                onSelectDuration(duration)
                             },
                         contentAlignment = Alignment.Center
                     ) {
@@ -214,7 +248,7 @@ fun FocusScreen(
             if (isIdle) {
                 PrimaryButton(
                     text = "Start Focus (${selectedDuration} min)",
-                    onClick = { viewModel.startSession(context) }
+                    onClick = onStart
                 )
             } else {
                 Row(
@@ -229,7 +263,7 @@ fun FocusScreen(
                         modifier = Modifier
                             .weight(1f)
                             .height(Spacing.buttonHeight)
-                            .clickable { viewModel.cancelSession(context) }
+                            .clickable { onCancel() }
                     ) {
                         Box(
                             contentAlignment = Alignment.Center,
@@ -251,8 +285,8 @@ fun FocusScreen(
                             .weight(1f)
                             .height(Spacing.buttonHeight)
                             .clickable {
-                                if (isRunning) viewModel.pauseSession(context)
-                                else viewModel.resumeSession(context)
+                                if (isRunning) onPause()
+                                else onResume()
                             }
                     ) {
                         Row(
@@ -305,5 +339,26 @@ fun FocusScreen(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun FocusTimerPreview() {
+    EarnReelsTheme {
+        FocusTimerContent(
+            selectedDuration = 25,
+            status = TimerStatus.RUNNING,
+            remainingSeconds = 21 * 60 + 40,
+            totalSeconds = 25 * 60,
+            todayCompletedMinutes = 25,
+            streakDays = 4,
+            onSelectDuration = {},
+            onStart = {},
+            onPause = {},
+            onResume = {},
+            onCancel = {},
+            onBack = {}
+        )
     }
 }

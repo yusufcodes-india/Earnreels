@@ -1,6 +1,5 @@
 package com.earnreels.app.features.today
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,8 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.DirectionsRun
 import androidx.compose.material.icons.rounded.Bedtime
-import androidx.compose.material.icons.rounded.DirectionsRun
 import androidx.compose.material.icons.rounded.FitnessCenter
 import androidx.compose.material.icons.rounded.HourglassEmpty
 import androidx.compose.material.icons.rounded.Settings
@@ -31,8 +30,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.earnreels.app.domain.model.AppSettings
+import com.earnreels.app.domain.model.DailyHabitSummary
+import com.earnreels.app.domain.model.ReelsAllowance
 import com.earnreels.app.domain.model.WorkoutType
 import com.earnreels.app.ui.components.BottomNavBar
 import com.earnreels.app.ui.components.HabitCard
@@ -43,6 +46,7 @@ import com.earnreels.app.ui.components.RewardCard
 import com.earnreels.app.ui.components.StreakBadge
 import com.earnreels.app.ui.theme.CardSurface
 import com.earnreels.app.ui.theme.CharcoalBackground
+import com.earnreels.app.ui.theme.EarnReelsTheme
 import com.earnreels.app.ui.theme.LimeAccent
 import com.earnreels.app.ui.theme.SleepAccent
 import com.earnreels.app.ui.theme.Spacing
@@ -67,6 +71,37 @@ fun TodayScreen(
         viewModel.refreshHealthData()
     }
 
+    TodayDashboardContent(
+        allowance = allowance,
+        summary = summary,
+        settings = settings,
+        completedFocusMinutes = completedFocus,
+        isWorkoutDialogOpen = isWorkoutDialogOpen,
+        onStartFocus = onStartFocus,
+        onOpenSettings = onOpenSettings,
+        onSelectTab = onSelectTab,
+        onOpenWorkoutDialog = { viewModel.openWorkoutDialog() },
+        onCloseWorkoutDialog = { viewModel.closeWorkoutDialog() },
+        onLogWorkout = { viewModel.logWorkout(it) },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun TodayDashboardContent(
+    allowance: ReelsAllowance,
+    summary: DailyHabitSummary?,
+    settings: AppSettings,
+    completedFocusMinutes: Int,
+    isWorkoutDialogOpen: Boolean,
+    onStartFocus: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onSelectTab: (NavTab) -> Unit,
+    onOpenWorkoutDialog: () -> Unit,
+    onCloseWorkoutDialog: () -> Unit,
+    onLogWorkout: (WorkoutType) -> Unit,
+    modifier: Modifier = Modifier
+) {
     Scaffold(
         bottomBar = {
             BottomNavBar(
@@ -139,9 +174,9 @@ fun TodayScreen(
                 HabitCard(
                     title = "Focus",
                     icon = Icons.Rounded.HourglassEmpty,
-                    primaryMetric = "$completedFocus minutes completed",
+                    primaryMetric = "$completedFocusMinutes minutes completed",
                     secondaryMetric = "Goal: 25m blocks",
-                    progress = (completedFocus.toFloat() / 25f).coerceIn(0f, 1f),
+                    progress = (completedFocusMinutes.toFloat() / 25f).coerceIn(0f, 1f),
                     accentColor = LimeAccent,
                     onClick = onStartFocus
                 )
@@ -151,7 +186,7 @@ fun TodayScreen(
                 val stepGoal = settings.dailyStepGoal
                 HabitCard(
                     title = "Steps",
-                    icon = Icons.Rounded.DirectionsRun,
+                    icon = Icons.AutoMirrored.Rounded.DirectionsRun,
                     primaryMetric = "%,d / %,d steps".format(steps, stepGoal),
                     secondaryMetric = if (steps >= stepGoal) "Goal reached (+10m)" else "Health Connect",
                     progress = (steps.toFloat() / stepGoal.toFloat()).coerceIn(0f, 1f),
@@ -182,7 +217,7 @@ fun TodayScreen(
                     progress = if (workoutDone) 1f else 0f,
                     accentColor = LimeAccent,
                     onClick = {
-                        if (!workoutDone) viewModel.openWorkoutDialog()
+                        if (!workoutDone) onOpenWorkoutDialog()
                     }
                 )
             }
@@ -203,7 +238,7 @@ fun TodayScreen(
     // Workout Selection Dialog
     if (isWorkoutDialogOpen) {
         AlertDialog(
-            onDismissRequest = { viewModel.closeWorkoutDialog() },
+            onDismissRequest = onCloseWorkoutDialog,
             containerColor = CardSurface,
             title = {
                 Text(
@@ -227,7 +262,7 @@ fun TodayScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { viewModel.logWorkout(type) }
+                                .clickable { onLogWorkout(type) }
                                 .padding(vertical = Spacing.md),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -242,10 +277,46 @@ fun TodayScreen(
             },
             confirmButton = {},
             dismissButton = {
-                TextButton(onClick = { viewModel.closeWorkoutDialog() }) {
+                TextButton(onClick = onCloseWorkoutDialog) {
                     Text("Cancel", color = TextSecondary)
                 }
             }
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun TodayDashboardPreview() {
+    EarnReelsTheme {
+        TodayDashboardContent(
+            allowance = ReelsAllowance(
+                date = "2026-11-17",
+                currentAllowanceMinutes = 20,
+                totalEarnedToday = 25,
+                totalUsedToday = 5,
+                maxDailyCap = 30
+            ),
+            summary = DailyHabitSummary(
+                date = "2026-11-17",
+                focusMinutesCompleted = 25,
+                stepsCompleted = 8420,
+                stepGoal = 8000,
+                stepRewardAwarded = true,
+                workoutCompleted = false,
+                sleepBedtimeOnTime = true,
+                sleepDurationMinutes = 445,
+                sleepGoalMet = true
+            ),
+            settings = AppSettings(),
+            completedFocusMinutes = 25,
+            isWorkoutDialogOpen = false,
+            onStartFocus = {},
+            onOpenSettings = {},
+            onSelectTab = {},
+            onOpenWorkoutDialog = {},
+            onCloseWorkoutDialog = {},
+            onLogWorkout = {}
         )
     }
 }
