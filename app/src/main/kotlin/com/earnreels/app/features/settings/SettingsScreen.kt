@@ -17,7 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.ChevronRight
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Shield
@@ -82,7 +82,7 @@ fun SettingsScreen(
         ) {
             IconButton(onClick = onBack) {
                 Icon(
-                    imageVector = Icons.Rounded.ArrowBack,
+                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                     contentDescription = "Back",
                     tint = TextMain
                 )
@@ -212,8 +212,10 @@ fun SettingsScreen(
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = CharcoalBackground,
                             checkedTrackColor = LimeAccent,
+                            checkedBorderColor = LimeAccent,
                             uncheckedThumbColor = TextSecondary,
-                            uncheckedTrackColor = BorderSubtle
+                            uncheckedTrackColor = BorderSubtle,
+                            uncheckedBorderColor = BorderSubtle
                         )
                     )
                 }
@@ -244,8 +246,10 @@ fun SettingsScreen(
                         colors = SwitchDefaults.colors(
                             checkedThumbColor = CharcoalBackground,
                             checkedTrackColor = LimeAccent,
+                            checkedBorderColor = LimeAccent,
                             uncheckedThumbColor = TextSecondary,
-                            uncheckedTrackColor = BorderSubtle
+                            uncheckedTrackColor = BorderSubtle,
+                            uncheckedBorderColor = BorderSubtle
                         )
                     )
                 }

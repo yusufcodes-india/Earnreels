@@ -17,9 +17,11 @@ EarnReels is a local-first, privacy-focused native Android app that builds a hea
 
 ## 🎨 Visual Identity & Philosophy
 
-- **Dark Charcoal Canvas**: `#0E1116` background and `#161B22` card surfaces create a distraction-free, restful dashboard.
-- **Vibrant Lime Accent**: `#B7F542` highlights earned time and primary actions with crisp legibility.
-- **Soft Violet Sleep Accent**: `#8B7CF6` provides restful visual hierarchy for sleep data.
+- **Deep Matte Black Background (`#0A0A0A`)**: Calm, battery-efficient OLED black without harsh glare.
+- **Subtle Charcoal Surfaces (`#161616`)**: Clean cards and elevated surfaces separating limit cards and controls.
+- **Soft Off-White Primary Text (`#F2F2F2`)**: Crisp readability with gentle contrast that reduces eye strain.
+- **Neutral Muted Gray Secondary Text (`#8E8E93`)**: Subtle timestamps, sub-metrics, and captions.
+- **Pure White Active Accent & Toggles (`#FFFFFF`)**: High-contrast pure white for active block switches, wallet ring countdown, and primary action buttons.
 - **Zero Gamification Clutter**: No intrusive badges, no XP points, no social feeds, and no manipulative streaks. Just clear, honest metrics.
 
 ---
